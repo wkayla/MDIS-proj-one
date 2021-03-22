@@ -147,13 +147,3 @@ spinal_allergy_sub=spinal_allergy%>%
                                          ifelse(Name=="None","None","Not Classified"),as.character(FDA.Established.Pharmacologic.Class..EPC..Text.Phrase)))
 
 save(spinal_allergy_sub,file="A:/Shared/DataLibrary/CA_Anesthesiology/AP0008RzasaLynn/analytic_data.Rdata")
-
-unique_icd=Table4_dx.csv%>%filter(person_id%in%spinal_procedures_sub$person_id)%>%distinct(code,code_description)
-
-write.csv(unique_icd,"A:/Shared/DataLibrary/CA_Anesthesiology/AP0008RzasaLynn/ICDs_in_data.csv",row.names=F)
-
-location=spinal_allergy%>%distinct(encounter_LocationName)
-write.csv(location,"A:/Shared/DataLibrary/CA_Anesthesiology/AP0008RzasaLynn/location.csv",row.names=F)
-
-
-write.csv(not_classified,"A:/Shared/DataLibrary/CA_Anesthesiology/AP0008RzasaLynn/MDIS Not Classified.csv",row.names=F)
