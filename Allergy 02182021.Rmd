@@ -1,0 +1,96 @@
+---
+title: "AP0008RzasaLynn"
+author: "K. Williamson"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(knitr)
+knitr::opts_chunk$set(echo = FALSE)
+library(tidyverse)
+load("A:/Shared/DataLibrary/CA_Anesthesiology/AP0008RzasaLynn/analytic_data.Rdata")
+
+allergens=read.csv("A:/Shared/DataLibrary/CA_Anesthesiology/AP0008RzasaLynn/allergens.csv",header=T)
+```
+
+There were `r length(unique(spinal_allergy_sub$person_id))` subjects with a spinal procedure.
+
+```{r, echo =F,warning=F,message=F,comment=NA}
+
+allergen_classified=spinal_allergy_sub%>%
+                    left_join(allergens,by=c("FDA.Established.Pharmacologic.Class..EPC..Text.Phrase"=
+                                              "FDA.Established.Pharmacologic.Class..EPC..Text.Phrase"))%>%
+                    group_by(person_id)%>%
+                    mutate(classes=length(unique(FDA.Established.Pharmacologic.Class..EPC..Text.Phrase)),
+                            num_drugs=length(unique(Name)),
+                           num_drugs=ifelse(any(Name=="None"),num_drugs-1,num_drugs),
+                           num_encounters=length(unique(encounter_id)),
+                           no_allergies=ifelse(all(Name=="None")|all(drug=="n"),"No Allergies","Allergies"),
+                           mdis=ifelse(no_allergies=="Allergies"&classes>=3,"Yes","No"))
+  
+allergen_classified%>%
+    distinct(person_id,no_allergies)%>%
+    ggplot(aes(x=no_allergies))+geom_bar()+theme_bw()+xlab("Number of Encounters per person ID")
+
+
+allergen_spine=allergen_classified%>%
+                    filter(no_allergies=="Allergies")
+
+
+allergen_spine%>%
+    group_by(person_id)%>%
+    distinct(person_id,num_encounters)%>%
+    ggplot(aes(x=num_encounters))+geom_histogram()+theme_bw()+xlab("Number of Encounters per person ID")
+
+
+
+
+allergen_spine%>%
+      distinct(person_id,num_drugs)%>%
+        ggplot(aes(x=num_drugs))+geom_histogram()+theme_bw()+xlab("Number of Allergies")
+
+
+allergen_spine%>%
+      distinct(person_id,classes)%>%
+        ggplot(aes(x=classes))+geom_histogram()+theme_bw()+xlab("Number of Allergy Classes")
+
+
+allergen_spine%>%
+      distinct(person_id,mdis)%>%
+        ggplot(aes(x=mdis))+geom_bar()+theme_bw()+xlab("MDIS")
+
+allergen_spine%>%
+      filter(mdis=="Yes")%>%
+      distinct(person_id,num_drugs)%>%
+        ggplot(aes(x=num_drugs))+geom_bar()+theme_bw()+xlab("Num drugs")
+
+```
+
+`r round(165/length(unique(allergen_classified$person_id)),2)*100`% of subjects with a spinal procedure (n=2007) had MDIS (n=165). Of those with at least one allergy (n=829) 20% had MDIS (n=165).
+
+```{r, echo =F,warning=F,message=F,comment=NA,include=F}
+allergen_classified%>%
+      
+      distinct(person_id,infection)%>%
+        ggplot(aes(x=infection))+geom_bar()+theme_bw()+xlab("Infection")
+```
+
+```{r, echo =F,warning=F,message=F,comment=NA,include=F}
+allergen_classified%>%
+      distinct(person_id,respiratory_infection)%>%
+        ggplot(aes(x=respiratory_infection))+geom_bar()+theme_bw()+xlab("Respiratory Infection")
+```
+
+```{r, echo =F,warning=F,message=F,comment=NA,include=F}
+marijuana=spinal_allergy_sub%>%
+          distinct(person_id,marijuana_dx_hx,marijuana_usage_social_history)
+
+marijuana%>%
+  group_by(marijuana_usage_social_history)%>%
+  count()
+
+
+marijuana%>%
+  group_by(marijuana_dx_hx)%>%
+  count()
+```
