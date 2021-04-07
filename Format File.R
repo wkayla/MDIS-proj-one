@@ -146,4 +146,4 @@ spinal_allergy_sub=spinal_allergy%>%
                       mutate(Name=ifelse(is.na(FDA.Established.Pharmacologic.Class..EPC..Text.Phrase),
                                          ifelse(Name=="None","None","Not Classified"),as.character(FDA.Established.Pharmacologic.Class..EPC..Text.Phrase)))
 
-save(spinal_allergy_sub,file="A:/Shared/DataLibrary/CA_Anesthesiology/AP0008RzasaLynn/analytic_data.Rdata")
+# save(spinal_allergy_sub,file="A:/Shared/DataLibrary/CA_Anesthesiology/AP0008RzasaLynn/analytic_data.Rdata")
