@@ -146,4 +146,28 @@ spinal_allergy_sub=spinal_allergy%>%
                       mutate(Name=ifelse(is.na(FDA.Established.Pharmacologic.Class..EPC..Text.Phrase),
                                          ifelse(Name=="None","None","Not Classified"),as.character(FDA.Established.Pharmacologic.Class..EPC..Text.Phrase)))
 
-# save(spinal_allergy_sub,file="A:/Shared/DataLibrary/CA_Anesthesiology/AP0008RzasaLynn/analytic_data.Rdata")
+
+
+#adjust medications for morphine use
+spinal_allergy_sub=spinal_allergy_sub%>%
+  mutate(opiod=str_extract_all(tolower(med_name),"fentanyl|hydrocodone|hydromorphone|morphine|oxycodone|oxymorphone",simplify = T),
+         mg_adjusted_dose=ifelse(admin_dose_unit=="g",admin_dose*1000,
+                                 ifelse(admin_dose_unit=="mcg" |admin_dose_unit=="mcg/hr",admin_dose/1000,as.numeric(as.character(admin_dose)))),
+         adjusted_unit=ifelse(grepl("g|mcg|mg|tablet",admin_dose_unit),"mg",as.character(admin_dose_unit)),
+         hourly=ifelse(grepl("hr",admin_dose_unit),"Hour",""),
+         morphine_adjusted_dose=case_when(opiod=="fentanyl" & admin_route=="Intravenous" ~ mg_adjusted_dose*100,
+                                          opiod=="fentanyl" & admin_route=="Subcutaneous" ~ mg_adjusted_dose*100,
+                                          opiod=="hydrocodone" & admin_route=="Oral" ~ mg_adjusted_dose*1,
+                                          opiod=="hydromorphone" & admin_route=="Oral" ~ mg_adjusted_dose*4,
+                                          opiod=="hydromorphone" & admin_route=="Intravenous" ~ mg_adjusted_dose*6.7,
+                                          opiod=="hydromorphone" & admin_route=="Subcutaneous" ~ mg_adjusted_dose*6.7,
+                                          opiod=="oxycodone" & admin_route=="Oral" ~ mg_adjusted_dose*1.5,
+                                          opiod=="oxymorphone" & admin_route=="Oral" & mg_adjusted_dose=="10" ~ mg_adjusted_dose*3,
+                                          opiod=="oxymorphone" & admin_route=="Oral" & mg_adjusted_dose=="15" ~ mg_adjusted_dose*2,
+                                          opiod=="oxymorphone" & admin_route=="Intravenous" ~ mg_adjusted_dose*10,
+                                          opiod=="oxymorphone" & admin_route=="Subcutaneous" ~ mg_adjusted_dose*10,
+                                          opiod=="morphine" & admin_route=="Subcutaneous" ~ mg_adjusted_dose*1,
+                                          opiod=="morphine" & admin_route=="Intravenous" ~ mg_adjusted_dose*1,
+                                          opiod=="morphine" & admin_route=="Oral" ~ mg_adjusted_dose*1))
+
+save(spinal_allergy_sub,file="A:/Shared/DataLibrary/CA_Anesthesiology/AP0008RzasaLynn/analytic_data.Rdata")
