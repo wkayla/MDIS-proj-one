@@ -2,8 +2,8 @@
 library(tidyverse)
 load("A:/Shared/DataLibrary/CA_Anesthesiology/AP0008RzasaLynn/SpinalRawData.Rdata")
 
-mdis=read.csv("C:/Users/wkayla/OneDrive - The University of Colorado Denver/Rzasalynn/Data/MDIS FDA EPC.csv",header=T)
-allergies=read.csv("C:/Users/wkayla/OneDrive - The University of Colorado Denver/Rzasalynn/Data/Allergies.csv",header=T)
+mdis=read.csv("C:/Users/wkayla/OneDrive - The University of Colorado Denver/Anesthesiology Projects/Rzasalynn/Data/MDIS FDA EPC.csv",header=T)
+allergies=read.csv("C:/Users/wkayla/OneDrive - The University of Colorado Denver/Anesthesiology Projects/Rzasalynn/Data/allergens rl.csv",header=T)
 
 
 filenames <- list.files("A:/Shared/DataLibrary/CA_Anesthesiology/AP0008RzasaLynn/", pattern="*.csv", full.names=TRUE)
@@ -149,7 +149,7 @@ spinal_allergy_sub=spinal_allergy%>%
 
 
 #adjust medications for morphine use
-spinal_allergy_sub=spinal_allergy_sub%>%
+spinal_allergy_sub_meds=spinal_allergy_sub%>%
   mutate(opiod=str_extract_all(tolower(med_name),"fentanyl|hydrocodone|hydromorphone|morphine|oxycodone|oxymorphone",simplify = T),
          mg_adjusted_dose=ifelse(admin_dose_unit=="g",admin_dose*1000,
                                  ifelse(admin_dose_unit=="mcg" |admin_dose_unit=="mcg/hr",admin_dose/1000,as.numeric(as.character(admin_dose)))),
@@ -168,6 +168,16 @@ spinal_allergy_sub=spinal_allergy_sub%>%
                                           opiod=="oxymorphone" & admin_route=="Subcutaneous" ~ mg_adjusted_dose*10,
                                           opiod=="morphine" & admin_route=="Subcutaneous" ~ mg_adjusted_dose*1,
                                           opiod=="morphine" & admin_route=="Intravenous" ~ mg_adjusted_dose*1,
-                                          opiod=="morphine" & admin_route=="Oral" ~ mg_adjusted_dose*1))
+                                          opiod=="morphine" & admin_route=="Oral" ~ mg_adjusted_dose*1),
+         days_from_surg_to_prescription=as.numeric(as.character(days_from_dob_toprescription))-as.numeric(as.character(days_from_dob_procstart)),
+         three_or_less_days_to_prescrition=ifelse(days_from_surg_to_prescription<=3, "Yes", "No"))
 
-save(spinal_allergy_sub,file="A:/Shared/DataLibrary/CA_Anesthesiology/AP0008RzasaLynn/analytic_data.Rdata")
+
+
+Table9_flowsheets.csv$person_id=as.character(Table9_flowsheets.csv$person_id)
+pain=spinal_allergy_sub_meds%>%
+        select(person_id,days_from_dob_procstart)%>%
+        full_join(Table9_flowsheets.csv,by=c("person_id"="person_id"))%>%
+        mutate(days_pain=)
+
+save(spinal_allergy_sub_meds,file="A:/Shared/DataLibrary/CA_Anesthesiology/AP0008RzasaLynn/analytic_data.Rdata")
