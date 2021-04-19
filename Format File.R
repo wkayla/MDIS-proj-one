@@ -173,11 +173,10 @@ spinal_allergy_sub_meds=spinal_allergy_sub%>%
          three_or_less_days_to_prescrition=ifelse(days_from_surg_to_prescription<=3, "Yes", "No"))
 
 
+pain=Table9_flowsheets.csv%>%
+        filter(flowsheet_name=="R UCH IP PAIN 0-10" &flowsheet_value!="")
 
-Table9_flowsheets.csv$person_id=as.character(Table9_flowsheets.csv$person_id)
-pain=spinal_allergy_sub_meds%>%
-        select(person_id,days_from_dob_procstart)%>%
-        full_join(Table9_flowsheets.csv,by=c("person_id"="person_id"))%>%
-        mutate(days_pain=)
+spinal_allergy_sub_meds_pain=spinal_allergy_sub_meds%>%
+                                full_join_join(pain,by=c("person_id"="person_id","days_from_dob_to_procstart"="days_from_dob_to_flowsheet"))
 
 save(spinal_allergy_sub_meds,file="A:/Shared/DataLibrary/CA_Anesthesiology/AP0008RzasaLynn/analytic_data.Rdata")

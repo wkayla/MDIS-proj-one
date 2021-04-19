@@ -13,11 +13,11 @@ load("A:/Shared/DataLibrary/CA_Anesthesiology/AP0008RzasaLynn/analytic_data.Rdat
 allergens=read.csv("A:/Shared/DataLibrary/CA_Anesthesiology/AP0008RzasaLynn/allergens.csv",header=T)
 ```
 
-There were `r length(unique(spinal_allergy_sub$person_id))` subjects with a spinal procedure.
+There were `r length(unique(spinal_allergy_sub_meds$person_id))` subjects with a spinal procedure.
 
 ```{r, echo =F,warning=F,message=F,comment=NA}
 
-allergen_classified=spinal_allergy_sub%>%
+allergen_classified=spinal_allergy_sub_meds%>%
                     left_join(allergens,by=c("FDA.Established.Pharmacologic.Class..EPC..Text.Phrase"=
                                               "FDA.Established.Pharmacologic.Class..EPC..Text.Phrase"))%>%
                     group_by(person_id)%>%
@@ -68,21 +68,21 @@ allergen_spine%>%
 
 `r round(165/length(unique(allergen_classified$person_id)),2)*100`% of subjects with a spinal procedure (n=2007) had MDIS (n=165). Of those with at least one allergy (n=829) 20% had MDIS (n=165).
 
-```{r, echo =F,warning=F,message=F,comment=NA,include=F}
+```{r, echo =F,warning=F,message=F,comment=NA}
 allergen_classified%>%
       
       distinct(person_id,infection)%>%
         ggplot(aes(x=infection))+geom_bar()+theme_bw()+xlab("Infection")
 ```
 
-```{r, echo =F,warning=F,message=F,comment=NA,include=F}
+```{r, echo =F,warning=F,message=F,comment=NA}
 allergen_classified%>%
       distinct(person_id,respiratory_infection)%>%
         ggplot(aes(x=respiratory_infection))+geom_bar()+theme_bw()+xlab("Respiratory Infection")
 ```
 
-```{r, echo =F,warning=F,message=F,comment=NA,include=F}
-marijuana=spinal_allergy_sub%>%
+```{r, echo =F,warning=F,message=F,comment=NA}
+marijuana=spinal_allergy_sub_meds%>%
           distinct(person_id,marijuana_dx_hx,marijuana_usage_social_history)
 
 marijuana%>%
